@@ -7,6 +7,7 @@
 #define COMMON_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /**
  * @brief How we order quadrants when processing the tree
@@ -37,5 +38,13 @@ static const int quadrant_order[4] = {
  */
 uint8_t calculate_fourth_mean(uint8_t parent_mean, uint8_t error,
                               uint8_t m1, uint8_t m2, uint8_t m3);
+
+/**
+ * @brief Check if a number is a power of two
+ *
+ * @param x Number to check
+ * @return true if x is a power of two, false otherwise
+ */
+bool is_power_of_two(uint32_t x);
 
 #endif /* COMMON_H */

@@ -7,3 +7,8 @@ uint8_t calculate_fourth_mean(uint8_t parent_mean, uint8_t error, uint8_t m1, ui
 
     return (uint8_t)m4;
 }
+
+bool is_power_of_two(uint32_t x)
+{
+    return x && !(x & (x - 1));
+}
