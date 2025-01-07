@@ -20,7 +20,6 @@ typedef struct
 {
     bool compress;           /* Are we compressing? */
     bool decompress;         /* Are we decompressing? */
-    bool verbose;            /* Should we show extra info? */
     bool generate_grid;      /* Should we make a grid view? */
     const char *input_file;  /* Which file to read */
     const char *output_file; /* Where to save the result */

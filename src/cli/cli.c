@@ -20,8 +20,7 @@ void cli_print_help(void)
            "  -o <output>     Output file path\n"
            "  -g              Generate segmentation grid\n"
            "  -a <alpha>      Compression parameter (default: 1.0)\n"
-           "  -h              Display this help\n"
-           "  -v              Enable verbose mode\n");
+           "  -h              Display this help\n");
 }
 
 static bool handle_option_with_argument(const char opt, const char *arg,
@@ -74,9 +73,6 @@ static bool handle_flag_option(const char opt, config_t *config)
         break;
     case 'u':
         config->decompress = true;
-        break;
-    case 'v':
-        config->verbose = true;
         break;
     case 'h':
         cli_print_help();
