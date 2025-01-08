@@ -23,7 +23,7 @@ void cli_print_help(void)
            "  -h              Display this help\n");
 }
 
-static bool handle_option_with_argument(const char opt, const char *arg,
+static bool handle_option_with_argument(const char opt,
                                         int *i, int argc, char **argv,
                                         config_t *config)
 {
@@ -131,7 +131,7 @@ bool cli_parse_arguments(int argc, char **argv, config_t *config)
         // Handle options that require additional arguments
         if (strchr("ioga", arg[1]))
         {
-            if (!handle_option_with_argument(arg[1], arg, &i, argc, argv, config))
+            if (!handle_option_with_argument(arg[1], &i, argc, argv, config))
             {
                 return false;
             }

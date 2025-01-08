@@ -77,23 +77,24 @@ static bool calculate_node_properties(qtree_node_t *node)
     if (!node || !node->children[0])
         return false;
 
-    uint8_t m1 = node->children[0]->m;
-    uint8_t m2 = node->children[1]->m;
-    uint8_t m3 = node->children[2]->m;
-    uint8_t m4 = node->children[3]->m;
+    const uint8_t m1 = node->children[0]->m;
+    const uint8_t m2 = node->children[1]->m;
+    const uint8_t m3 = node->children[2]->m;
+    const uint8_t m4 = node->children[3]->m;
 
-    uint32_t sum = m1 + m2 + m3 + m4;
-    uint8_t mean = (uint8_t)(sum / 4);
-    uint8_t error = sum % 4;
+    // Using uint32_t to safely hold sum of four uint8_t values
+    const uint32_t sum = (uint32_t)m1 + (uint32_t)m2 + (uint32_t)m3 + (uint32_t)m4;
+    const uint8_t mean = (uint8_t)(sum / 4);
+    const uint8_t error_val = (uint8_t)(sum % 4);
 
-    bool all_uniform = node->children[0]->u && node->children[1]->u &&
-                       node->children[2]->u && node->children[3]->u;
-    bool all_same = (m1 == m2) && (m2 == m3) && (m3 == m4);
-    bool is_uniform = (error == 0) && all_uniform && all_same;
+    const bool all_uniform = node->children[0]->u && node->children[1]->u &&
+                            node->children[2]->u && node->children[3]->u;
+    const bool all_same = (m1 == m2) && (m2 == m3) && (m3 == m4);
+    const bool is_uniform = (error_val == 0) && all_uniform && all_same;
 
     node->m = mean;
-    node->e = error;
-    node->u = is_uniform;
+    node->e = (unsigned char)(error_val & 0x3);  // Ensure 2-bit value
+    node->u = (unsigned char)(is_uniform ? 1 : 0);
 
     return is_uniform;
 }

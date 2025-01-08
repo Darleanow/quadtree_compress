@@ -222,8 +222,25 @@ static qtree_node_t *decompress_node(bit_reader_t *reader, uint32_t level,
     // Process node attributes based on level
     if (level < max_level)
     {
-        node->e = read_bits(reader, 2);
-        node->u = (node->e == 0) ? read_bit(reader) : 0;
+        uint8_t error_bits = read_bits(reader, 2);
+        if (error_bits > 3)
+        {
+            reader->has_error = true;
+            reader->error_msg = "Invalid error value";
+            free(node);
+            return NULL;
+        }
+        node->e = (unsigned char)(error_bits & 0x3);
+
+        if (error_bits == 0)
+        {
+            uint8_t uniform_bit = read_bit(reader);
+            node->u = (unsigned char)(uniform_bit != 0) & 0x1;
+        }
+        else
+        {
+            node->u = 0;
+        }
     }
     else
     {
@@ -238,21 +255,37 @@ static qtree_node_t **decompress_level(bit_reader_t *reader, uint32_t level,
                                        uint32_t max_level, qtree_node_t **prev_level,
                                        size_t prev_level_size)
 {
+    if (!reader || !prev_level || prev_level_size == 0) {
+        if (reader) {
+            reader->has_error = true;
+            reader->error_msg = "Invalid parameters to decompress_level";
+        }
+        return NULL;
+    }
+
     // Count non-uniform nodes at previous level
     size_t non_uniform_count = 0;
-    for (size_t i = 0; i < prev_level_size; i++)
-    {
-        if (prev_level[i] && !prev_level[i]->u)
-        {
+    for (size_t i = 0; i < prev_level_size; i++) {
+        if (prev_level[i] && !prev_level[i]->u) {
             non_uniform_count++;
         }
     }
 
-    // Allocate new level
+    // If no non-uniform nodes, return minimal allocation
     size_t current_level_size = non_uniform_count * 4;
-    qtree_node_t **current_level = malloc(sizeof(qtree_node_t *) * current_level_size);
-    if (!current_level)
-    {
+    if (current_level_size == 0) {
+        qtree_node_t **empty_level = calloc(1, sizeof(qtree_node_t *));
+        if (!empty_level) {
+            reader->has_error = true;
+            reader->error_msg = "Memory allocation failed for empty level";
+            return NULL;
+        }
+        return empty_level;
+    }
+
+    // Allocate level array for non-uniform nodes
+    qtree_node_t **current_level = calloc(current_level_size, sizeof(qtree_node_t *));
+    if (!current_level) {
         reader->has_error = true;
         reader->error_msg = "Memory allocation failed for level nodes";
         return NULL;
@@ -260,22 +293,17 @@ static qtree_node_t **decompress_level(bit_reader_t *reader, uint32_t level,
 
     // Process nodes at current level
     size_t current_idx = 0;
-    for (size_t i = 0; i < prev_level_size && !reader->has_error; i++)
-    {
+    for (size_t i = 0; i < prev_level_size && !reader->has_error; i++) {
         qtree_node_t *parent = prev_level[i];
-        if (!parent || parent->u)
-        {
+        if (!parent || parent->u) {
             continue;
         }
 
-        for (int j = 0; j < 4; j++)
-        {
+        for (int j = 0; j < 4; j++) {
             current_level[current_idx] = decompress_node(reader, level, max_level,
-                                                         parent, j);
-            if (!current_level[current_idx])
-            {
-                for (size_t k = 0; k < current_idx; k++)
-                {
+                                                       parent, j);
+            if (!current_level[current_idx]) {
+                for (size_t k = 0; k < current_idx; k++) {
                     free(current_level[k]);
                 }
                 free(current_level);

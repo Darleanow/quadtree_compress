@@ -11,7 +11,6 @@
 #include "common/common.h"
 
 #define MAGIC_NUMBER "P5" /**< Binary PGM format identifier */
-#define MAX_LINE_LEN 256  /**< Maximum length of header lines */
 
 /**
  * @brief Skip whitespace and comments in PGM file

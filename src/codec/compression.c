@@ -20,6 +20,7 @@
 #include <math.h>
 
 #define MAGIC_BYTES "Q1"
+#define BUFFER_SIZE 1024
 
 /**
  * @brief Initialize a new compression state
@@ -142,7 +143,7 @@ static bool write_header(FILE *file, const qtree_t *tree, const float compressio
         return false;
 
     // Write compression statistics
-    if (fprintf(file, "# compression rate %.2f%%\n", compression_rate) < 0)
+    if (fprintf(file, "# compression rate %.2f%%\n", (double)compression_rate) < 0)
         return false;
 
     // Write tree depth
@@ -323,12 +324,12 @@ qtree_status_t compress(const qtree_t *tree, const char *output_filename, FILE *
     log_item("Copying data", "%.2f KB", (double)temp_state.total_bits / 8192.0);
 
     rewind(temp_buffer);
-    char buffer[4096];
+    char buffer[BUFFER_SIZE];  // Using smaller buffer size
     size_t bytes_read;
     size_t total_copied = 0;
     const size_t total_bytes = (temp_state.total_bits + 7) / 8;
 
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), temp_buffer)) > 0)
+    while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, temp_buffer)) > 0)
     {
         if (fwrite(buffer, 1, bytes_read, output_file) != bytes_read)
         {
