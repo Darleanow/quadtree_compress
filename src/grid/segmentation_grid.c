@@ -103,6 +103,7 @@ qtree_status_t qtree_generate_grid(const qtree_t *tree, const char *output_file)
     // Create blank PGM image
     pgm_t grid_pgm;
     grid_pgm.size = tree->size;
+    grid_pgm.max_value = 255;
     grid_pgm.pixels = calloc(tree->size * tree->size, sizeof(uint8_t));
 
     if (!grid_pgm.pixels)
